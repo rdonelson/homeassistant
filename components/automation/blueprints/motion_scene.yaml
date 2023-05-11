@@ -15,6 +15,11 @@ blueprint:
       selector:
         entity:
           domain: input_boolean
+    illuminance_entity:
+      name: Illuminance Sensor
+      selector:
+        entity:
+          domain: sensor
     lux_max:
       name: Lux Max
       description: Light will be triggered at or below this brightness
@@ -61,11 +66,9 @@ condition:
   - condition: state
     entity_id: !input motion_override
     state: "off"
-  - type: is_illuminance
-    condition: device
-    device_id: c32df597b5dd2336d6b5fcb34f865bc3
-    entity_id: sensor.dining_room_motion_sensor_illuminance
-    domain: sensor
+  - condition: numeric_state
+    entity_id: !input illuminance_entity
+    attribute: light_level
     below: !input lux_max
 
 action:
