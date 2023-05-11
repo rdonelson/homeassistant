@@ -1,0 +1,88 @@
+blueprint:
+  name: Motion-activated Scene
+  description: Turn on a sene when motion is detected.
+  domain: automation
+  input:
+    motion_entity:
+      name: Motion Sensor
+      selector:
+        entity:
+          domain: binary_sensor
+          device_class: motion
+    motion_override:
+      name: Motion Override
+      selector:
+        entity:
+          domain: input_boolean
+    lux_max:
+      name: Lux Max
+      description: Light will be triggered at or below this brightness
+      default: 100
+      selector:
+        number:
+          min: 0
+          max: 3600
+          unit_of_measurement: lux
+    scene_on:
+      name: Scene to Turn On
+      selector:
+        target:
+          entity:
+            domain: scene
+    scene_off:
+      name: Scene to Turn Off
+      selector:
+        target:
+          entity:
+            domain: scene
+    no_motion_wait:
+      name: Wait time
+      description: Time to leave the scene on after last motion is detected.
+      default: 120
+      selector:
+        number:
+          min: 0
+          max: 3600
+          unit_of_measurement: seconds
+
+# If motion is detected within the delay,
+# we restart the script.
+mode: restart
+max_exceeded: silent
+
+trigger:
+  platform: state
+  entity_id: !input motion_entity
+  from: "off"
+  to: "on"
+
+condition:
+  - condition: state
+    entity_id: !input motion_override
+    state: "off"
+  - type: is_illuminance
+    condition: device
+    device_id: c32df597b5dd2336d6b5fcb34f865bc3
+    entity_id: sensor.dining_room_motion_sensor_illuminance
+    domain: sensor
+    below: !input lux_max
+
+action:
+  - alias: "Turn on the scene"
+    service: scene.turn_on
+    target: !input scene_on
+  - alias: "Wait until there is no motion from device"
+    wait_for_trigger:
+      platform: state
+      entity_id: !input motion_entity
+      from: "on"
+      to: "off"
+  - alias: "Wait the number of seconds that has been set"
+    delay: !input no_motion_wait
+  - if:
+      - condition: state
+        entity_id: !input motion_override
+        state: "off"
+    then:
+      - service: scene.turn_on
+        target: !input scene_off
