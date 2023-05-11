@@ -2,6 +2,7 @@ blueprint:
   name: Motion-activated Scene
   description: Turn on a sene when motion is detected.
   domain: automation
+  source_url: https://github.com/rdonelson/homeassistant/blob/main/components/automation/blueprints/motion_scene.yaml
   input:
     motion_entity:
       name: Motion Sensor
