@@ -10,7 +10,7 @@ blueprint:
         entity:
           domain: binary_sensor
           device_class: motion
-    motion_override:
+    override_entity:
       name: Motion Override
       selector:
         entity:
@@ -20,9 +20,9 @@ blueprint:
       selector:
         entity:
           domain: sensor
-    lux_max:
-      name: Lux Max
-      description: Light will be triggered at or below this brightness
+    illuminance_below:
+      name: Illuminance Below
+      description: Scene will be triggered below this brightness
       default: 100
       selector:
         number:
@@ -64,12 +64,11 @@ trigger:
 
 condition:
   - condition: state
-    entity_id: !input motion_override
+    entity_id: !input override_entity
     state: "off"
   - condition: numeric_state
     entity_id: !input illuminance_entity
-    attribute: light_level
-    below: !input lux_max
+    below: !input illuminance_below
 
 action:
   - alias: "Turn on the scene"
@@ -85,7 +84,7 @@ action:
     delay: !input no_motion_wait
   - if:
       - condition: state
-        entity_id: !input motion_override
+        entity_id: !input override_entity
         state: "off"
     then:
       - service: scene.turn_on
