@@ -1,6 +1,6 @@
 blueprint:
   name: Motion-activated Scene
-  description: Turn on a sene when motion is detected.
+  description: Turn on a scene when motion is detected.
   domain: automation
   source_url: https://github.com/rdonelson/homeassistant/blob/main/components/automation/blueprints/motion_scene.yaml
   input:
@@ -62,18 +62,18 @@ trigger:
   from: "off"
   to: "on"
 
-condition:
-  - condition: state
-    entity_id: !input override_entity
-    state: "off"
-  - condition: numeric_state
-    entity_id: !input illuminance_entity
-    below: !input illuminance_below
-
 action:
-  - alias: "Turn on the scene"
-    service: scene.turn_on
-    target: !input scene_on
+  - if:
+      - condition: state
+        entity_id: !input override_entity
+        state: "off"
+      - condition: numeric_state
+        entity_id: !input illuminance_entity
+        below: !input illuminance_below
+    then:
+      - alias: "Turn on the scene"
+        service: scene.turn_on
+        target: !input scene_on
   - alias: "Wait until there is no motion from device"
     wait_for_trigger:
       platform: state
