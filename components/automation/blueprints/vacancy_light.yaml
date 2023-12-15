@@ -1,0 +1,52 @@
+blueprint:
+  name: Vacancy Light
+  description: Turn lights off when no motion is detected
+  domain: automation
+  source_url: https://github.com/rdonelson/homeassistant/blob/main/components/automation/blueprints/vacancy_light.yaml
+  input:
+    motion_entity:
+      name: Motion Sensor
+      selector:
+        entity:
+          domain: binary_sensor
+          device_class: motion
+    override_entity:
+      name: Motion Override
+      selector:
+        entity:
+          domain: input_boolean
+    light_target:
+      name: Light to Turn Off
+      selector:
+        target:
+          entity:
+            domain: light
+    no_motion_wait:
+      name: Wait time
+      description: Time since last motion detected
+      default: 120
+      selector:
+        number:
+          min: 0
+          max: 86400
+          unit_of_measurement: seconds
+mode: restart
+max_exceeded: silent
+trigger:
+  platform: state
+  entity_id: !input motion_entity
+  from: "on"
+  to: "off"
+  for:
+    hours: 0
+    minutes: 0
+    seconds: !input no_motion_wait
+action:
+  - if:
+      - condition: state
+        entity_id: !input override_entity
+        state: "off"
+    then:
+      - alias: "Turn off the light"
+        service: light.turn_off
+        target: !input light_target
